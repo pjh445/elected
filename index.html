@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML 데이터 사용</title>
+    <style>
+
+        h1, #lists {max-width:1200px; margin:20px auto; }
+        table,th,td {border:1px solid gray; border-collapse: collapse;}
+        th{padding:10px; background-color:beige;}
+        td {padding:7px; }
+        td.w1 {width:7%; text-align: center;}
+    </style>
+</head>
+<body>
+    <h1>2022년도 국회의원 당선인 목록</h1>
+    <div id="lists">
+        <table>
+            <tr>
+                <th class='w1'>정당명</th>
+                <th class='w1'>당선인</th>
+                <th>주소</th>
+                <th>학력</th>
+                <th>경력</th>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        // XML 데이터를 가져오는 함수
+        async function fetchXML() {
+            try {
+                // XML 데이터 URL (XML 데이터를 제공하는 경로)
+                const response = await fetch('https://apis.data.go.kr/9760000/WinnerInfoInqireService2/getWinnerInfoInqire?serviceKey=u9ids4VxsKVpFzEzkWWsO1MZBY2L%2Fdoo0TLquOwRRTw6Ahbm5Mim42P%2BXvt3Fhd6wm8OHhTvuGWHsRgfNyvT5A%3D%3D&pageNo=1&numOfRows=10&sgId=20220309&sgTypecode=2'); // XML 파일 경로
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, "application/xml");
+
+                displayData(xmlDoc);
+            } catch (error) {
+                console.error("XML 데이터를 가져오는 중 오류 발생:", error);
+            }
+        }
+
+        // XML 데이터를 HTML로 표시하는 함수
+        function displayData(xmlDoc) {
+            const items = xmlDoc.getElementsByTagName("item");
+            const table = document.querySelector("#lists table");
+
+            for (let i = 0; i < items.length; i++) {
+                const jdName = items[i].getElementsByTagName("jdName")[0].textContent;
+                const name = items[i].getElementsByTagName("name")[0].textContent;
+                const age  = items[i].getElementsByTagName("age")[0].textContent;
+                const addr = items[i].getElementsByTagName("addr")[0].textContent;
+                const edu = items[i].getElementsByTagName("edu")[0].textContent;
+                const career1 = items[i].getElementsByTagName("career1")[0].textContent;
+                const career2 = items[i].getElementsByTagName("career2")[0].textContent;
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `                    
+                    <td class='w1'>${jdName}</td>
+                    <td class='w1'>${name}<br>${age}세</td>
+                    <td>${addr}</td>
+                    <td>${edu}</td>
+                    <td>${career1}, ${career2}</td>                     
+                `;
+                table.appendChild(tr);
+            }
+        }
+
+        // 페이지 로드 시 XML 데이터를 가져옴
+        document.addEventListener("DOMContentLoaded", fetchXML);
+    </script>
+</body>
+</html>
